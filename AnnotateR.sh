@@ -147,7 +147,7 @@ echo "Cleaning Up..."
 cd ${input_dir}
 for i in $(ls -1 *.faa); do
   genome_name=$(echo "$i" | sed 's/.faa//')
-  echo "genome_name" >> 1.tmp
+  echo "${genome_name}" >> 1.tmp
   grep -c ">" $i >> 2.tmp
   if [[ $checkm_run == "T" ]]; then
     grep "${genome_name}" ../${output_dir}/checkm_output/checkm_summary.txt | awk '{print $13, $14}' >> 3.tmp
@@ -168,4 +168,4 @@ fi
 if [[ $prod_run == "T" ]]; then
   echo -e "Proteins predicted by prodigal can be found in ${output_dir}/Prodigal_out/"
 fi
-echo -e "A table of sample metadata has been written to ${output_dir}"
+echo -e "A table of sample metadata has been written to ${output_dir}/Genome_metadata.txt"
