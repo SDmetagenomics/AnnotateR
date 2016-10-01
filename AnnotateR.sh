@@ -73,7 +73,7 @@ fi
 #### Begin Define Functions ####
 
 prodigal_fn(){
-	prodigal -i ${contigs} -a ${contigs}.faa -m -p single > /dev/null
+	prodigal -i ${contigs} -a ${contigs}.faa -m -p single > /dev/null 2>&1
   echo -e "Genes predicted for ${contigs}..."
 }
 
@@ -114,7 +114,7 @@ fi
 cd ..
 
 
-if [[ $checkm_run == "T"]]; then
+if [[ $checkm_run == "T" ]]; then
   mkdir -p ${output_dir}/checkm_output
   echo -e "Running CheckM on genomes with 10 threads" ###Can modify later
   # Need pplacer in path
