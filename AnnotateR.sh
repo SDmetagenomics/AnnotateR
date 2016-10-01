@@ -7,7 +7,8 @@ usage(){
       echo -e "\n\tOptions:"
       echo -e "\t-i: Directory of fasta format files to use as input (required)"
       echo -e "\t-o: Directory where output files will be written (required, will be created if absent)"
-      echo -e "\t-p: Input directory contains contigs; Run prodigal in single genome mode to predict proteins"
+      echo -e "\t-p: Input directory contains DNA contigs; Run prodigal in single genome mode to predict proteins"
+      echo -e "\t-c: Do not run CheckM for genome completeness (Runs by Default)"
       echo -e "\t-t: Number of threads to use (Default: 6)"
       echo -e "\t-e: E-value cutoff for HMM scoring (Default: 10)"
       echo -e "\t-h: Display this message and exit"
@@ -17,9 +18,10 @@ usage(){
 ## Default Arguments ##
 threads=6
 evalue=10
+checkm_run=T
 ## Default Arguments ##
 
-while getopts ":hi:o:pt:e:" opt; do
+while getopts ":hi:o:pct:e:" opt; do
   case $opt in
     h)
       usage
@@ -36,7 +38,10 @@ while getopts ":hi:o:pt:e:" opt; do
       exit 1
       ;;
     p)
-      prod_run="TRUE"
+      prod_run="T"
+      ;;
+    c)
+      checkm_run="F"
       ;;
     t)
       threads=${OPTARG}
@@ -68,12 +73,18 @@ fi
 #### Begin Define Functions ####
 
 prodigal_fn(){
-	prodigal -i ${contigs} -a ${contigs}.faa -m -p single
+	prodigal -i ${contigs} -a ${contigs}.faa -m -p single > /dev/null
+  echo -e "Genes predicted for ${contigs}..."
 }
 
 
-hmm_scan_fn(){
-	hmmscan --domtblout ${proteins}_out_domtbl.txt --cpu 4 --domE ${evalue} /home/sdiamond/database/CAZy_HMM/dbCAN-fam-HMMs.txt ${proteins} > ${proteins}_out_full.txt
+checkm_fn(){
+  checkm lineage_wf -f ${output_dir}/checkm_output/checkm_summary.txt --genes -x faa -t 10 --pplacer_threads 10 ${input_dir} ${output_dir}/checkm_output
+}
+
+
+hmm_scan_fn(){ ###Can modify this function to accept modular HMM database inputs possibly use if statements with set up databases
+	hmmscan --domtblout ${proteins}_out_domtbl.txt --cpu 6 --domE ${evalue} /home/sdiamond/database/CAZy_HMM/dbCAN-fam-HMMs.txt ${proteins} > ${proteins}_out_full.aln
 	wait
 	echo "Completed hmmscan for ${proteins}..."
 	sh /home/sdiamond/database/CAZy_HMM/hmmscan-parser.sh ${proteins}_out_domtbl.txt > ${proteins}_out_domtbl.parse
@@ -81,12 +92,14 @@ hmm_scan_fn(){
 	echo "Completed parsing results for ${proteins}..."
 }
 
+
 #### End Define Functions ###
 
 mkdir -p ${output_dir}
 cd ${input_dir}
 
-if [[ $prod_run == "TRUE" ]]; then
+if [[ $prod_run == "T" ]]; then
+  echo -e "Contig DNA as input...\nRunning prodigal on contig files with ${threads} threads"
 	ls -1 *.fasta > all_samples.txt
 	split all_samples.txt -l $threads batch.
 	for batch in $(ls -1 batch.*); do
@@ -96,10 +109,22 @@ if [[ $prod_run == "TRUE" ]]; then
 		wait
 	done
 	rm all_samples.txt batch.*
-	rename ".fasta.faa" ".faa" *.faa
-fi 
+	rename ".fasta.faa" ".faa" *.faa ###need to find a better way to rename
+fi
+cd ..
 
 
+if [[ $checkm_run == "T"]]; then
+  mkdir -p ${output_dir}/checkm_output
+  echo -e "Running CheckM on genomes with 10 threads" ###Can modify later
+  # Need pplacer in path
+  PATH=/home/sdiamond/bin/pplacer-Linux-v1.1.alpha17/:$PATH ###This will need to be generalized for other users
+  checkm_fn
+  wait
+fi
+
+mkdir -p ${output_dir}/HMM_output
+cd ${input_dir}
 ls -1 *.faa > all_samples.txt
 split all_samples.txt -l $threads batch.
 for batch in $(ls -1 batch.*); do
@@ -108,9 +133,8 @@ for batch in $(ls -1 batch.*); do
 	done
 	wait
 done
-rm all_samples.txt batch.*
-mv *_out_domtbl.txt ../${output_dir}
-mv *_out_full.txt ../${output_dir}
-mv *_out_domtbl.parse ../${output_dir}
+rm all_samples.txt batch.* *_out_domtbl.txt
+mv *_out_full.aln ../${output_dir}/HMM_output/
+mv *_out_domtbl.parse ../${output_dir}/HMM_output/
 cd ..
 echo "...HMM Scan of protein files complete..."
