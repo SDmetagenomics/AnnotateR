@@ -86,10 +86,9 @@ checkm_fn(){
 hmm_scan_fn(){ ###Can modify this function to accept modular HMM database inputs possibly use if statements with set up databases
 	hmmscan --domtblout ${proteins}_out_domtbl.txt --cpu 6 --domE ${evalue} /home/sdiamond/database/CAZy_HMM/dbCAN-fam-HMMs.txt ${proteins} > ${proteins}_out_full.aln
 	wait
-	echo "Completed hmmscan for ${proteins}..."
 	sh /home/sdiamond/database/CAZy_HMM/hmmscan-parser.sh ${proteins}_out_domtbl.txt > ${proteins}_out_domtbl.parse
 	wait
-	echo "Completed parsing results for ${proteins}..."
+	echo "Completed HMM results for ${proteins}..."
 }
 
 
@@ -98,6 +97,7 @@ hmm_scan_fn(){ ###Can modify this function to accept modular HMM database inputs
 mkdir -p ${output_dir}
 cd ${input_dir}
 
+## Code chunk for running prodigal
 if [[ $prod_run == "T" ]]; then
   echo -e "Contig DNA as input...\nRunning prodigal on contig files with ${threads} threads"
 	ls -1 *.fasta > all_samples.txt
@@ -113,7 +113,7 @@ if [[ $prod_run == "T" ]]; then
 fi
 cd ..
 
-
+## Code chunk for running CheckM
 if [[ $checkm_run == "T" ]]; then
   mkdir -p ${output_dir}/checkm_output
   echo -e "Running CheckM on genomes with 10 threads" ###Can modify later
@@ -121,8 +121,11 @@ if [[ $checkm_run == "T" ]]; then
   PATH=/home/sdiamond/bin/pplacer-Linux-v1.1.alpha17/:$PATH ###This will need to be generalized for other users
   checkm_fn
   wait
+  echo -e "CheckM Run complete..."
 fi
 
+## Code chunk for performing HMM annotation
+echo -e "Beginning HMM annotation of protein files..."
 mkdir -p ${output_dir}/HMM_output
 cd ${input_dir}
 ls -1 *.faa > all_samples.txt
@@ -137,4 +140,32 @@ rm all_samples.txt batch.* *_out_domtbl.txt
 mv *_out_full.aln ../${output_dir}/HMM_output/
 mv *_out_domtbl.parse ../${output_dir}/HMM_output/
 cd ..
-echo "...HMM Scan of protein files complete..."
+echo "HMM Annotation of protein files complete..."
+echo "Cleaning Up..."
+
+## Code Chunk for cleaning up and producing metadata
+cd ${input_dir}
+for i in $(ls -1 *.faa); do
+  genome_name=$(echo "$i" | sed 's/.faa//')
+  echo "genome_name" >> 1.tmp
+  grep -c ">" $i >> 2.tmp
+  if [[ $checkm_run == "T" ]]; then
+    grep "${genome_name}" ../${output_dir}/checkm_output/checkm_summary.txt | awk '{print $13, $14}' >> 3.tmp
+  fi
+done
+paste *.tmp > ../${output_dir}/Genome_metadata.txt
+
+if [[ $prod_run == "T" ]]; then
+  mkdir -p ../${output_dir}/Prodigal_out
+  mv *.faa ../${output_dir}/Prodigal_out/
+fi
+
+echo -e "\n...Annotation complete..."
+echo -e "HMM hit tables and alignments can be found in ${output_dir}/HMM_output/"
+if [[ $checkm_run == "T" ]]; then
+  echo -e "CheckM output can be found in ${output_dir}/checkm_output/"
+fi
+if [[ $prod_run == "T" ]]; then
+  echo -e "Proteins predicted by prodigal can be found in ${output_dir}/Prodigal_out/"
+fi
+echo -e "A table of sample metadata has been written to ${output_dir}"
