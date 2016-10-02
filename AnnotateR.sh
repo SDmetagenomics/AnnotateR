@@ -154,6 +154,7 @@ for i in $(ls -1 *.faa); do
   fi
 done
 paste *.tmp > ../${output_dir}/Genome_metadata.txt
+rm *.tmp
 
 if [[ $prod_run == "T" ]]; then
   mkdir -p ../${output_dir}/Prodigal_out
