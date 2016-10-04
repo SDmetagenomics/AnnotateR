@@ -94,7 +94,7 @@ prodigal_fn(){
 
 
 checkm_fn(){
-  checkm lineage_wf -f ${output_dir}/checkm_output/checkm_summary.txt --genes -x faa -t 10 --pplacer_threads 10 ${input_dir} ${output_dir}/checkm_output
+  checkm lineage_wf -f ${output_dir}/checkm_output/checkm_summary.txt --genes -x faa -t ${threads} --pplacer_threads ${threads} ${input_dir} ${output_dir}/checkm_output
 }
 
 
