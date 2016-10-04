@@ -154,7 +154,7 @@ fi
 
 
 ## Code chunk for performing CAZy HMM annotation
-if [[ $cazy_run =="T"]]; then
+if [[ $cazy_run == "T" ]]; then
   echo -e "Beginning CAZy HMM annotation of protein files..."
   mkdir -p ${output_dir}/CAZy_HMM_output
   cd ${input_dir}
@@ -179,7 +179,7 @@ fi
 
 
 ## Code chunk for performing CAZy HMM annotation
-if [[ $metabolic_run =="T"]]; then
+if [[ $metabolic_run == "T" ]]; then
   echo -e "Beginning Metabolic HMM annotation of protein files..."
   mkdir -p ${output_dir}/tmp
   cd ${input_dir}
