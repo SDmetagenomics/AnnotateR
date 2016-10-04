@@ -112,7 +112,7 @@ hmm_metabolic_fn(){
 	mkdir ../${output_dir}/tmp/${proteome_name}
 	for n in $(ls -1 $metabolic_hmm_database); do
 		cutoff=$(grep "$n" $metabolic_hmm_cutoffs | awk '{print $3}')
-		hmmsearch --cpu 6 --tblout ../${output_dir}/tmp/${proteome_name}/${n}_out.txt -T $cutoff ${metabolic_hmm_database}/${n} ${proteins}
+		hmmsearch --cpu 6 --tblout ../${output_dir}/tmp/${proteome_name}/${n}_out.txt -T $cutoff ${metabolic_hmm_database}/${n} ${proteins} > /dev/null 2>&1
 	done
   echo "Completed Metabolic_HMM results for ${proteins}"
 }
