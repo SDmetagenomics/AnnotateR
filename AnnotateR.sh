@@ -26,7 +26,7 @@ cazy_run=T
 metabolic_run=T
 
 cazy_hmm_database="/home/sdiamond/database/CAZy_HMM/dbCAN-fam-HMMs.txt"
-metabolic_hmm_database="/home/sdiamond/database/Custom_HMM/Metabolic_HMMs/"
+metabolic_hmm_database="/home/sdiamond/database/Custom_HMM/Metabolic_HMMs"
 metabolic_hmm_cutoffs="/home/sdiamond/database/Custom_HMM/Metabolic_HMM_Cutoff_Scores.txt"
 ## Default Arguments and Database Paths ##
 
@@ -111,7 +111,7 @@ hmm_metabolic_fn(){
 	proteome_name=$(echo "$proteins" | sed 's/.faa//')
 	mkdir ../${output_dir}/tmp/${proteome_name}
 	for n in $(ls -1 $metabolic_hmm_database); do
-		cutoff=$(grep "$n" $metabolic_hmm_cutoffs| awk '{print $3}')
+		cutoff=$(grep "$n" $metabolic_hmm_cutoffs | awk '{print $3}')
 		hmmsearch --cpu 6 --tblout ../${output_dir}/tmp/${proteome_name}/${n}_out.txt -T $cutoff ${metabolic_hmm_database}/${n} ${proteins}
 	done
   echo "Completed Metabolic_HMM results for ${proteins}"
@@ -206,7 +206,7 @@ if [[ $metabolic_run == "T" ]]; then
    cd ..
   done
   cd ..
-  #rm -r tmp
+  rm -r tmp
   cd ..
 fi
 
