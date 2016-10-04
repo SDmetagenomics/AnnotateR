@@ -110,9 +110,9 @@ hmm_CAZy_fn(){ ###Can modify this function to accept modular HMM database inputs
 hmm_metabolic_fn(){
 	proteome_name=$(echo "$proteins" | sed 's/.faa//')
 	mkdir ../${output_dir}/tmp/${proteome_name}
-	for i in $(ls -1 $metabolic_hmm_database); do
-		cutoff=$(grep "$i" $metabolic_hmm_cutoffs | awk '{print $3}')
-		hmmsearch --cpu 6 --tblout ../${output_dir}/tmp/${proteome_name}/${i}_out.txt -T $cutoff ${HMM_Database}/${i} ${proteins} > /dev/null 2>&1
+	for n in $(ls -1 $metabolic_hmm_database); do
+		cutoff=$(grep "$n" $metabolic_hmm_cutoffs| awk '{print $3}')
+		hmmsearch --cpu 6 --tblout ../${output_dir}/tmp/${proteome_name}/${n}_out.txt -T $cutoff ${metabolic_hmm_database}/${n} ${proteins}
 	done
   echo "Completed Metabolic_HMM results for ${proteins}"
 }
@@ -201,12 +201,13 @@ if [[ $metabolic_run == "T" ]]; then
    cd $i
    touch ../../Metabolic_HMM_output/${i}
    	for tblout in $(ls -1); do
-   		cat $tblout | head -n -10 | tail -n +4 | awk '{print $1, $3, $6}' >> ../../Metabolic_HMM_output/${i}
+   		less $tblout | head -n -10 | tail -n +4 | awk '{print $1, $3, $6}' >> ../../Metabolic_HMM_output/${i}
    	done
    cd ..
   done
   cd ..
-  rm -r tmp
+  #rm -r tmp
+  cd ..
 fi
 
 echo "HMM Annotation of protein files complete..."
