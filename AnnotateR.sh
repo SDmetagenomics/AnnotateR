@@ -222,7 +222,7 @@ for i in $(ls -1 *.faa); do
   echo "${genome_name}" >> 1.tmp
   grep -c ">" $i >> 2.tmp
   if [[ $checkm_run == "T" ]]; then
-    grep "${genome_name}" ../${output_dir}/checkm_output/checkm_summary.txt | awk '{print $13, $14}' >> 3.tmp
+    grep "${genome_name}" ../${output_dir}/checkm_output/checkm_summary.txt | awk -v OFS='\t' '{print $13, $14}' >> 3.tmp
   fi
 done
 paste *.tmp > ../${output_dir}/Genome_metadata.txt
