@@ -144,7 +144,7 @@ cd ..
 ## Code chunk for running CheckM
 if [[ $checkm_run == "T" ]]; then
   mkdir -p ${output_dir}/checkm_output
-  echo -e "Running CheckM on genomes with 10 threads" ###Can modify later
+  echo -e "Running CheckM on genomes with ${threads} threads" ###Can modify later
   # Need pplacer in path
   PATH=/home/sdiamond/bin/pplacer-Linux-v1.1.alpha17/:$PATH ###This will need to be generalized for other users
   checkm_fn
